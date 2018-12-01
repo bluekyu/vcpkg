@@ -1,0 +1,45 @@
+variables:
+  REPO_NAME: 'vcpkg'
+
+jobs:
+- job: Windows
+  pool:
+    vmImage: 'VS2017-Win2016'
+
+  strategy:
+    matrix:
+      vc140-release:
+        BUILD_TOOLSET_VERSION: '140'
+        BUILD_CONFIGURATION: 'release'
+      vc141-debug:
+        BUILD_TOOLSET_VERSION: '141'
+        BUILD_CONFIGURATION: 'debug'
+      vc141-release:
+        BUILD_TOOLSET_VERSION: '141'
+        BUILD_CONFIGURATION: 'release'
+
+  variables:
+    CMAKE_GENERATOR: 'Visual Studio 15 2017 Win64'
+    VCPKG_DEFAULT_TRIPLET: x64-windows-vc$(BUILD_TOOLSET_VERSION)
+
+  steps:
+  - task: BatchScript@1
+    displayName: 'Bootstrap'
+    inputs:
+      filename: 'bootstrap-vcpkg.bat'
+
+  - script: vcpkg install boost-dll boost-any boost-multi-index fmt spdlog yaml-cpp assimp
+    displayName: 'Install for render_pipeline_cpp'
+
+  - script: vcpkg install fmt openvr imgui
+    displayName: 'Install for rpcpp_plugins'
+
+  - task: ArchiveFiles@2
+    inputs:
+      rootFolderOrFile: '$(Build.SourcesDirectory)/installed'
+      archiveType: '7z'
+      archiveFile: '$(Build.ArtifactStagingDirectory)/vcpkg-installed.7z'
+
+  - task: PublishBuildArtifacts@1
+    inputs:
+      artifactName: '$(REPO_NAME)-vc$(BUILD_TOOLSET_VERSION)-$(BUILD_CONFIGURATION)'
