@@ -1,5 +1,6 @@
 variables:
   REPO_NAME: 'vcpkg'
+  VCPKG_ROOT: '$(Build.SourcesDirectory)'
 
 jobs:
 - job: Windows
@@ -11,25 +12,21 @@ jobs:
       vc141:
         BUILD_TOOLSET_VERSION: '141'
 
-  variables:
-    CMAKE_GENERATOR: 'Visual Studio 15 2017 Win64'
-    VCPKG_DEFAULT_TRIPLET: x64-windows-vc$(BUILD_TOOLSET_VERSION)
-
   steps:
   - task: BatchScript@1
     displayName: 'Bootstrap'
     inputs:
       filename: 'bootstrap-vcpkg.bat'
 
-  - script: vcpkg install boost-dll boost-any boost-multi-index fmt spdlog yaml-cpp assimp imgui
+  - script: $(VCPKG_ROOT)\vcpkg.exe install --triplet x64-windows-vc$(BUILD_TOOLSET_VERSION) boost-dll boost-any boost-multi-index fmt spdlog yaml-cpp assimp imgui
     displayName: 'Install for render_pipeline_cpp'
 
-  - script: vcpkg install openvr
+  - script: $(VCPKG_ROOT)\vcpkg.exe install --triplet x64-windows-vc$(BUILD_TOOLSET_VERSION) openvr
     displayName: 'Install for rpcpp_plugins'
 
   - task: ArchiveFiles@2
     inputs:
-      rootFolderOrFile: '$(Build.SourcesDirectory)/installed'
+      rootFolderOrFile: '$(VCPKG_ROOT)/installed'
       archiveType: '7z'
       archiveFile: '$(Build.ArtifactStagingDirectory)/vcpkg-installed.7z'
 
