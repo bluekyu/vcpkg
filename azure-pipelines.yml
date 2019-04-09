@@ -4,13 +4,18 @@ variables:
 
 jobs:
 - job: Windows
-  pool:
-    vmImage: 'VS2017-Win2016'
 
   strategy:
     matrix:
       vc141:
+        VM_IMAGE_NAME: 'vs2017-win2016'
         BUILD_TOOLSET_VERSION: '141'
+      vc142:
+        VM_IMAGE_NAME: 'windows-2019'
+        BUILD_TOOLSET_VERSION: '142'
+
+  pool:
+    vmImage: $(VM_IMAGE_NAME)
 
   steps:
   - task: BatchScript@1
